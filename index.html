@@ -7,11 +7,14 @@
 <style>
 /* ====== Reset & Variables ====== */
 :root {
-  --bg:#0b0e14; --surface:#151922; --card:#1c2030; --border:#2a3040;
-  --gold:#f0c040; --silver:#a0a8c0; --bronze:#d4843a;
-  --green:#4caf84; --red:#e0556a; --blue:#5b9cf5; --accent:#f5a623;
-  --text:#d0d4e0; --dim:#788090; --white:#e8ecf4;
+  --bg:#0a0d16; --surface:#141824; --card:#1a1f30; --border:#2a3148;
+  --gold:#f5c842; --silver:#b8c0d8; --bronze:#e8984a;
+  --green:#3dd68c; --red:#f1475d; --blue:#5ea2f7; --accent:#f7b32b;
+  --text:#d8dce8; --dim:#8890a8; --white:#f0f2f8;
   --radius:12px; --transition:.2s;
+  --grad1:linear-gradient(135deg,#f7b32b,#f5931e);
+  --grad2:linear-gradient(135deg,#3dd68c,#22c55e);
+  --grad3:linear-gradient(135deg,#5ea2f7,#3b82f6);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
@@ -355,16 +358,37 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
 
     <div class="pred-grid">
-      <!-- Exact Score -->
+      <!-- Full-time Score -->
       <div class="pred-card">
-        <h4>🎯 最可能比分 (Top 6)</h4>
+        <h4>🎯 全场最可能比分 (Top 6)</h4>
         <div class="score-grid" id="score-grid"></div>
       </div>
 
-      <!-- Over/Under -->
+      <!-- Half-time Score -->
       <div class="pred-card">
-        <h4>📐 大小球预测 (总进球)</h4>
+        <h4>⏱️ 半场最可能比分 (Top 6)</h4>
+        <div class="score-grid" id="ht-score-grid"></div>
+      </div>
+
+      <!-- Full-time Over/Under -->
+      <div class="pred-card">
+        <h4>📐 全场大小球</h4>
         <div class="ou-grid" id="ou-grid"></div>
+      </div>
+
+      <!-- Half-time Over/Under -->
+      <div class="pred-card">
+        <h4>⏱️ 半场大小球</h4>
+        <div class="ou-grid" id="ht-ou-grid"></div>
+      </div>
+
+      <!-- HT W/D/W -->
+      <div class="pred-card">
+        <h4>⏱️ 半场胜平负</h4>
+        <div id="ht-wdl-bars"></div>
+        <div style="margin-top:8px;font-size:.8em;color:var(--dim)">
+          半场预期进球: <span id="ht-exp-goals" style="color:var(--white);font-weight:600"></span>
+        </div>
       </div>
 
       <!-- Corners -->
@@ -661,7 +685,36 @@ function runMatchPredict(){
   const scoreList=Object.entries(scores).sort((a,b)=>b[1]-a[1]).slice(0,6);
   document.getElementById('score-grid').innerHTML=scoreList.map(([sc,c],i)=>`<div class="score-item${i===0?' top':''}"><div class="sc">${sc}</div><div class="sc-pct">${(c/N*100).toFixed(1)}%</div></div>`).join('');
 
-  // Over/Under
+  // ---- Half-time predictions ----
+  const htRatio=0.42;
+  const hLamA=avgA*htRatio,hLamB=avgB*htRatio,hLamTot=hLamA+hLamB;
+  const hScores={};let hWA=0,hWB=0,hD=0;
+  for(let i=0;i<N;i++){
+    const ga=poisson(hLamA),gb=poisson(hLamB);
+    const k=ga+'-'+gb;hScores[k]=(hScores[k]||0)+1;
+    if(ga>gb)hWA++;else if(gb>ga)hWB++;else hD++;
+  }
+  const hPA=hWA/N*100,hPB=hWB/N*100,hPD=hD/N*100;
+  // HT WDL
+  const hWdl=[{l:ta.n+'胜',p:hPA,c:'var(--green)'},{l:'平局',p:hPD,c:'var(--accent)'},{l:tb.n+'胜',p:hPB,c:'var(--red)'}];
+  document.getElementById('ht-wdl-bars').innerHTML=hWdl.map(x=>`<div class="prob-bar-wrap"><span class="lbl">${x.l}</span><div class="prob-bar-inner"><div class="fill" style="width:${x.p}%;background:${x.c}"></div></div><span class="pct">${x.p.toFixed(1)}%</span></div>`).join('');
+  document.getElementById('ht-exp-goals').textContent=`${ta.n} ${hLamA.toFixed(2)} - ${hLamB.toFixed(2)} ${tb.n}`;
+  // HT Scores
+  const htScoreList=Object.entries(hScores).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('ht-score-grid').innerHTML=htScoreList.map(([sc,c],i)=>`<div class="score-item${i===0?' top':''}"><div class="sc">${sc}</div><div class="sc-pct">${(c/N*100).toFixed(1)}%</div></div>`).join('');
+  // HT Over/Under
+  let htU05=0,htU15=0,htU25=0;
+  for(let k=0;k<=0;k++)htU05+=poissonPDF(k,hLamTot);
+  for(let k=0;k<=1;k++)htU15+=poissonPDF(k,hLamTot);
+  for(let k=0;k<=2;k++)htU25+=poissonPDF(k,hLamTot);
+  const hLines=[
+    {line:'0.5球',over:1-htU05,under:htU05},
+    {line:'1.5球',over:1-htU15,under:htU15},
+    {line:'2.5球',over:1-htU25,under:htU25},
+  ];
+  document.getElementById('ht-ou-grid').innerHTML=hLines.map(l=>`<div class="ou-item"><div class="line">${l.line}</div><div class="ou-over ou-pct">大 ${(l.over*100).toFixed(1)}%</div><div class="ou-under ou-pct">小 ${(l.under*100).toFixed(1)}%</div></div>`).join('');
+
+  // ---- Full-time Over/Under ----
   const lamTot=avgA+avgB;
   let pUnder15=0,pUnder25=0,pUnder35=0;
   for(let k=0;k<=1;k++)pUnder15+=poissonPDF(k,lamTot);
@@ -704,23 +757,18 @@ function runBracket(){
 }
 
 function buildSVGBracket(result){
-  const MW=175, MH=48, CX=200, MX=30, MY=20;
-  const LC='#3a4050', LW=2.5, WC='#4caf84', GC='#f0c040';
+  const MW=185, MH=52, CX=210, MX=24, MY=24;
+  const BG='#1a1f30', LC='#3a4058', LW=2, WC='#3dd68c', GC='#f5c842';
+  const AC='#f7b32b', BC='#2a3148';
 
-  // Build rounds as match arrays
-  const ro32 = result.ro32; // [[a,b],...] 16 matches
-  // R16: pair adjacent Ro32 winners
+  const ro32 = result.ro32;
   const r16w = result.r16;
   const r16m = []; for(let i=0;i<8;i++) r16m.push([r16w[i*2],r16w[i*2+1]]);
-  // QF
   const qfw = result.qf;
   const qfm = []; for(let i=0;i<4;i++) qfm.push([qfw[i*2],qfw[i*2+1]]);
-  // SF
   const sfw = result.sf;
   const sfm = [[sfw[0],sfw[1]]];
-  // Final
   const finalm = [[sfw[0],sfw[1]]];
-  // Champ
   const champm = [[result.champ,null]];
 
   const rounds=[
@@ -732,29 +780,35 @@ function buildSVGBracket(result){
     {matches:champm,name:'🏆冠军'},
   ];
 
-  // Calculate positions
-  const positions=[]; // [{x,y} for each match in each round]
+  const positions=[];
   for(let r=0;r<rounds.length;r++){
     const n=rounds[r].matches.length;
     const x=MX+r*CX;
     const spacing=Math.pow(2,r)*MH;
     const startY=MY+spacing/2;
     const roundPos=[];
-    for(let i=0;i<n;i++){
-      roundPos.push({x:x,y:startY+i*spacing});
-    }
+    for(let i=0;i<n;i++) roundPos.push({x:x,y:startY+i*spacing});
     positions.push(roundPos);
   }
 
-  // Calculate total SVG size
-  const totalW=MX+rounds.length*CX+MW+MX;
-  const lastR=positions[0];
-  const totalH=(lastR.length>0)?lastR[lastR.length-1].y+MH+MY:600;
+  const lastPos=positions[0];
+  const totalW=MX+rounds.length*CX+MW+24;
+  const totalH=lastPos.length>0?lastPos[lastPos.length-1].y+MH+MY:600;
 
   let svg=`<svg width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg" style="min-width:${totalW}px">`;
-  svg+=`<defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  svg+=`<defs>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.4"/></filter>
+    <filter id="glowG"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="nodeBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e2640"/><stop offset="100%" stop-color="#161c2e"/></linearGradient>
+    <linearGradient id="nodeWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a3a2a"/><stop offset="100%" stop-color="#0f2618"/></linearGradient>
+    <linearGradient id="nodeChamp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3d2e0a"/><stop offset="50%" stop-color="#5a4010"/><stop offset="100%" stop-color="#3d2e0a"/></linearGradient>
+    <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${WC}"/></marker>
+  </defs>`;
 
-  // Draw connector lines first (behind nodes)
+  // Grid background
+  svg+=`<rect width="${totalW}" height="${totalH}" fill="${BG}" rx="14"/>`;
+
+  // Connector lines
   for(let r=0;r<rounds.length-1;r++){
     const curPos=positions[r],nextPos=positions[r+1];
     for(let i=0;i<curPos.length;i++){
@@ -763,23 +817,22 @@ function buildSVGBracket(result){
       if(ni<nextPos.length){
         const nx=nextPos[ni].x, ny=nextPos[ni].y+MH/2;
         const midX=cx+(nx-cx)*0.45;
-        // Draw path: → midX → vertical → nx
-        svg+=`<path d="M${cx},${cy} L${midX},${cy} L${midX},${ny} L${nx},${ny}"
-          stroke="${LC}" stroke-width="${LW}" fill="none" stroke-linejoin="round"/>`;
+        const isEven=(i%2===0);
+        svg+=`<path d="M${cx},${cy} L${midX},${cy} Q${midX+10},${cy} ${midX+10},${(cy+ny)/2} L${midX+10},${ny} Q${midX+10},${ny} ${nx},${ny}"
+          stroke="${LC}" stroke-width="${LW}" fill="none" stroke-linecap="round" opacity="0.6"/>`;
       }
     }
   }
 
-  // Draw match nodes
+  // Match nodes
   for(let r=0;r<rounds.length;r++){
     const posList=positions[r],matches=rounds[r].matches;
     for(let i=0;i<matches.length;i++){
       const [a,b]=matches[i],p=posList[i];
       if(!a)continue;
-      // Determine winner for this match
+
       let winnerName=null;
       if(b){
-        // Find winner by checking next round
         if(r<rounds.length-1){
           const ni=Math.floor(i/2),nextM=rounds[r+1].matches[ni];
           if(nextM){
@@ -789,56 +842,56 @@ function buildSVGBracket(result){
             else if(nextM[1]&&nextM[1].n===b.n)winnerName=b.n;
           }
         }
-        // For final, check champion
-        if(!winnerName&&r===4){
-          winnerName=result.champ.n;
-        }
-      }else if(r===5){
-        winnerName=a.n;
-      }
+        if(!winnerName&&r===4)winnerName=result.champ.n;
+      }else if(r===5)winnerName=a.n;
 
-      const isWinner=(a.n===winnerName);
-      const isWinnerB=(b&&b.n===winnerName);
-      const fillA=isWinner?WC:'#1c2030';
-      const fillB=(b&&isWinnerB)?WC:'#1c2030';
-      const strokeA=isWinner?WC:LC;
-      const strokeB=(b&&isWinnerB)?WC:LC;
+      const isAWin=(a.n===winnerName),isBWin=(b&&b.n===winnerName);
+      const isChamp=(r===5);
+      const fill=isChamp?'url(#nodeChamp)':(isAWin||isBWin)?'url(#nodeWin)':'url(#nodeBg)';
+      const stroke=isChamp?GC:(isAWin||isBWin)?WC:BC;
+      const sw=isChamp?2.5:(isAWin||isBWin)?2:1.5;
 
-      // Node background
-      svg+=`<rect x="${p.x}" y="${p.y}" width="${MW}" height="${MH}" rx="8"
-        fill="#151922" stroke="${LC}" stroke-width="1.5"/>`;
-      // Divider line
+      // Node bg with rounded corners
+      svg+=`<rect x="${p.x}" y="${p.y}" width="${MW}" height="${MH}" rx="10" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" filter="url(#shadow)"/>`;
+
+      // Middle divider
       if(b){
-        svg+=`<line x1="${p.x+40}" y1="${p.y+MH/2}" x2="${p.x+MW}" y2="${p.y+MH/2}"
-          stroke="${LC}" stroke-width="1"/>`;
+        svg+=`<line x1="${p.x+50}" y1="${p.y+MH/2}" x2="${p.x+MW}" y2="${p.y+MH/2}" stroke="${LC}" stroke-width="0.8" opacity="0.5"/>`;
       }
-      // Team A
-      svg+=`<text x="${p.x+35}" y="${p.y+19}" text-anchor="end"
-        fill="${isWinner?(r===5?GC:WC):'#a0a8c0'}" font-size="${r===5?'15':'12'}" font-weight="${isWinner?'700':'500'}"
-        font-family="PingFang SC,Microsoft YaHei,Arial,sans-serif">${a.n}</text>`;
+
+      // Flag circle indicators
+      const flagA=isAWin?WC:AC;
+      svg+=`<circle cx="${p.x+14}" cy="${p.y+18}" r="5" fill="${flagA}" opacity="0.8"/>`;
+
+      // Team A name
+      const aFill=isAWin?(isChamp?GC:WC):'#d0d4e0';
+      svg+=`<text x="${p.x+26}" y="${p.y+22}" text-anchor="start" fill="${aFill}" font-size="${isChamp?'15':'13'}" font-weight="${isAWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${a.n}</text>`;
+
       // Team B
       if(b){
-        svg+=`<text x="${p.x+35}" y="${p.y+39}" text-anchor="end"
-          fill="${isWinnerB?WC:'#a0a8c0'}" font-size="12" font-weight="${isWinnerB?'700':'500'}"
-          font-family="PingFang SC,Microsoft YaHei,Arial,sans-serif">${b.n}</text>`;
+        const flagB=isBWin?WC:AC;
+        svg+=`<circle cx="${p.x+14}" cy="${p.y+40}" r="5" fill="${flagB}" opacity="0.8"/>`;
+        const bFill=isBWin?WC:'#d0d4e0';
+        svg+=`<text x="${p.x+26}" y="${p.y+44}" text-anchor="start" fill="${bFill}" font-size="13" font-weight="${isBWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${b.n}</text>`;
       }
-      // Winner badge
-      if(winnerName&&r<5){
-        svg+=`<text x="${p.x+MW-12}" y="${p.y+15}" text-anchor="end" font-size="10"
-          fill="${WC}">✓</text>`;
+
+      // Progress indicator on right side
+      if(isAWin&&!isChamp){
+        svg+=`<circle cx="${p.x+MW-6}" cy="${p.y+MH/2}" r="8" fill="none" stroke="${WC}" stroke-width="2"/>`;
+        svg+=`<polyline points="${p.x+MW-10},${p.y+MH/2} ${p.x+MW-7},${p.y+MH/2+3} ${p.x+MW-3},${p.y+MH/2-2}" stroke="${WC}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
       }
-      // Champion crown
-      if(r===5){
-        svg+=`<text x="${p.x+MW/2}" y="${p.y-8}" text-anchor="middle" font-size="22">🏆</text>`;
+      if(isChamp){
+        svg+=`<text x="${p.x+MW/2}" y="${p.y-10}" text-anchor="middle" font-size="26" filter="url(#glowG)">👑</text>`;
+        svg+=`<text x="${p.x+MW/2}" y="${p.y+MH+20}" text-anchor="middle" font-size="11" fill="${GC}" font-family="PingFang SC,Microsoft YaHei,Arial">CHAMPION</text>`;
       }
     }
   }
 
-  // Round labels at top
+  // Round labels
   for(let r=0;r<rounds.length;r++){
     const px=positions[r][0].x;
-    svg+=`<text x="${px+MW/2}" y="12" text-anchor="middle" fill="#788090" font-size="11"
-      font-family="PingFang SC,Microsoft YaHei,Arial,sans-serif">${rounds[r].name}</text>`;
+    svg+=`<rect x="${px}" y="0" width="${MW}" height="20" rx="6" fill="${AC}" opacity="0.15"/>`;
+    svg+=`<text x="${px+MW/2}" y="14" text-anchor="middle" fill="${AC}" font-size="11" font-weight="700" font-family="PingFang SC,Microsoft YaHei,Arial">${rounds[r].name}</text>`;
   }
 
   svg+=`</svg>`;

@@ -3,18 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026世界杯预测工具 - 蒙特卡洛模拟·比分·大小球·角球</title>
+<title>The 2026 Oracle - World Cup Predictions</title>
 <style>
 /* ====== Reset & Variables ====== */
 :root {
-  --bg:#0a0d16; --surface:#141824; --card:#1a1f30; --border:#2a3148;
-  --gold:#f5c842; --silver:#b8c0d8; --bronze:#e8984a;
-  --green:#3dd68c; --red:#f1475d; --blue:#5ea2f7; --accent:#f7b32b;
-  --text:#d8dce8; --dim:#8890a8; --white:#f0f2f8;
+  --bg:#0d1117; --surface:#161b24; --card:#1c2333; --border:#293548;
+  --gold:#e2b04a; --silver:#9aa4b8; --bronze:#d08040;
+  --win:#e8c44a; --red:#e53e55; --blue:#5b9cf5; --accent:#e8a620;
+  --text:#c8d0dc; --dim:#687894; --white:#e4e9f2;
   --radius:12px; --transition:.2s;
-  --grad1:linear-gradient(135deg,#f7b32b,#f5931e);
-  --grad2:linear-gradient(135deg,#3dd68c,#22c55e);
-  --grad3:linear-gradient(135deg,#5ea2f7,#3b82f6);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
@@ -125,7 +122,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .ou-item .line{font-size:.85em;color:var(--dim);margin-bottom:2px}
 .ou-item .ou-pct{font-weight:700;font-size:1.1em}
 .ou-item .ou-label{font-size:.75em;font-weight:600}
-.ou-over{color:var(--green)}
+.ou-over{color:var(--win)}
 .ou-under{color:var(--red)}
 
 /* ====== Bracket ====== */
@@ -135,7 +132,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .bracket-col h4{text-align:center;color:var(--dim);font-size:.8em;margin-bottom:6px}
 .b-match{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin:3px 0;text-align:center;font-size:.78em}
 .b-match .bt{font-weight:600;padding:2px 0}
-.b-match .bw{color:var(--green);font-weight:700}
+.b-match .bw{color:var(--win);font-weight:700}
 .b-match.champ{border-color:var(--gold);background:rgba(240,192,64,.08)}
 .b-match.champ .bt{color:var(--gold);font-size:1em}
 
@@ -205,8 +202,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <div class="header">
   <div class="flags">🇺🇸 🇨🇦 🇲🇽</div>
-  <h1>2026 FIFA世界杯 预测工具</h1>
-  <div class="sub">48队 · 12组 · 蒙特卡洛模拟引擎 | 比分预测 · 大小球 · 角球分析</div>
+  <h1>🔮 The 2026 Oracle</h1>
+  <div class="sub">蒙特卡洛模拟引擎驱动 · 48队12组 · 比分 · 大小球 · 角球</div>
   <div style="margin-top:8px;font-size:.72em;color:var(--dim);max-width:700px;margin-left:auto;margin-right:auto;line-height:1.6">
     ⚠️ 本工具仅供足球爱好者娱乐参考，所有预测基于数学模型模拟，<b>不构成任何投注建议</b>。数据来源于公开信息，与FIFA官方无关。
   </div>
@@ -412,7 +409,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <h2>🏟️ 淘汰赛对阵树 · 工作流视图</h2>
       <button class="btn btn-outline btn-sm" onclick="runBracket()">🔄 重新模拟</button>
     </div>
-    <div style="overflow-x:auto" id="bracket-svg-wrap"></div>
+    <div id="bracket-svg-wrap"></div>
   </div>
 </div>
 
@@ -676,7 +673,7 @@ function runMatchPredict(){
   const mostLikely=pA>pB&&pA>pD?ta.n+'胜':(pB>pA&&pB>pD?tb.n+'胜':'平局');
 
   // WDL bars
-  const wdl=[{l:ta.n+'胜',p:pA,c:'var(--green)'},{l:'平局',p:pD,c:'var(--accent)'},{l:tb.n+'胜',p:pB,c:'var(--red)'}];
+  const wdl=[{l:ta.n+'胜',p:pA,c:'var(--win)'},{l:'平局',p:pD,c:'var(--accent)'},{l:tb.n+'胜',p:pB,c:'var(--red)'}];
   document.getElementById('wdl-bars').innerHTML=wdl.map(x=>`<div class="prob-bar-wrap"><span class="lbl">${x.l}</span><div class="prob-bar-inner"><div class="fill" style="width:${x.p}%;background:${x.c}"></div></div><span class="pct">${x.p.toFixed(1)}%</span></div>`).join('');
   document.getElementById('exp-goals').textContent=`${ta.n} ${avgA.toFixed(2)} - ${avgB.toFixed(2)} ${tb.n}`;
   document.getElementById('most-likely').textContent=mostLikely;
@@ -696,7 +693,7 @@ function runMatchPredict(){
   }
   const hPA=hWA/N*100,hPB=hWB/N*100,hPD=hD/N*100;
   // HT WDL
-  const hWdl=[{l:ta.n+'胜',p:hPA,c:'var(--green)'},{l:'平局',p:hPD,c:'var(--accent)'},{l:tb.n+'胜',p:hPB,c:'var(--red)'}];
+  const hWdl=[{l:ta.n+'胜',p:hPA,c:'var(--win)'},{l:'平局',p:hPD,c:'var(--accent)'},{l:tb.n+'胜',p:hPB,c:'var(--red)'}];
   document.getElementById('ht-wdl-bars').innerHTML=hWdl.map(x=>`<div class="prob-bar-wrap"><span class="lbl">${x.l}</span><div class="prob-bar-inner"><div class="fill" style="width:${x.p}%;background:${x.c}"></div></div><span class="pct">${x.p.toFixed(1)}%</span></div>`).join('');
   document.getElementById('ht-exp-goals').textContent=`${ta.n} ${hLamA.toFixed(2)} - ${hLamB.toFixed(2)} ${tb.n}`;
   // HT Scores
@@ -757,9 +754,9 @@ function runBracket(){
 }
 
 function buildSVGBracket(result){
-  const MW=185, MH=52, CX=210, MX=24, MY=24;
-  const BG='#1a1f30', LC='#3a4058', LW=2, WC='#3dd68c', GC='#f5c842';
-  const AC='#f7b32b', BC='#2a3148';
+  const MW=150, MH=42, CX=155, MX=16, MY=16;
+  const BG='#0d1117', LC='#374058', LW=1.8, WC='#e8c44a', GC='#e2b04a';
+  const AC='#e8a620', BC='#293548';
 
   const ro32 = result.ro32;
   const r16w = result.r16;
@@ -795,13 +792,13 @@ function buildSVGBracket(result){
   const totalW=MX+rounds.length*CX+MW+24;
   const totalH=lastPos.length>0?lastPos[lastPos.length-1].y+MH+MY:600;
 
-  let svg=`<svg width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg" style="min-width:${totalW}px">`;
+  let svg=`<svg width="100%" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:${totalW}px">`;
   svg+=`<defs>
     <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.4"/></filter>
     <filter id="glowG"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-    <linearGradient id="nodeBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e2640"/><stop offset="100%" stop-color="#161c2e"/></linearGradient>
-    <linearGradient id="nodeWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a3a2a"/><stop offset="100%" stop-color="#0f2618"/></linearGradient>
-    <linearGradient id="nodeChamp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3d2e0a"/><stop offset="50%" stop-color="#5a4010"/><stop offset="100%" stop-color="#3d2e0a"/></linearGradient>
+    <linearGradient id="nodeBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c2333"/><stop offset="100%" stop-color="#161b24"/></linearGradient>
+    <linearGradient id="nodeWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2a2418"/><stop offset="100%" stop-color="#1c1a10"/></linearGradient>
+    <linearGradient id="nodeChamp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2a2210"/><stop offset="50%" stop-color="#3d3018"/><stop offset="100%" stop-color="#2a2210"/></linearGradient>
     <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="${WC}"/></marker>
   </defs>`;
 
@@ -861,28 +858,33 @@ function buildSVGBracket(result){
 
       // Flag circle indicators
       const flagA=isAWin?WC:AC;
-      svg+=`<circle cx="${p.x+14}" cy="${p.y+18}" r="5" fill="${flagA}" opacity="0.8"/>`;
+      svg+=`<circle cx="${p.x+12}" cy="${p.y+15}" r="4.5" fill="${flagA}" opacity="0.85"/>`;
 
       // Team A name
       const aFill=isAWin?(isChamp?GC:WC):'#d0d4e0';
-      svg+=`<text x="${p.x+26}" y="${p.y+22}" text-anchor="start" fill="${aFill}" font-size="${isChamp?'15':'13'}" font-weight="${isAWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${a.n}</text>`;
+      svg+=`<text x="${p.x+22}" y="${p.y+19}" text-anchor="start" fill="${aFill}" font-size="${isChamp?'14':'12'}" font-weight="${isAWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${a.n}</text>`;
 
       // Team B
       if(b){
         const flagB=isBWin?WC:AC;
-        svg+=`<circle cx="${p.x+14}" cy="${p.y+40}" r="5" fill="${flagB}" opacity="0.8"/>`;
+        svg+=`<circle cx="${p.x+12}" cy="${p.y+33}" r="4.5" fill="${flagB}" opacity="0.85"/>`;
         const bFill=isBWin?WC:'#d0d4e0';
-        svg+=`<text x="${p.x+26}" y="${p.y+44}" text-anchor="start" fill="${bFill}" font-size="13" font-weight="${isBWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${b.n}</text>`;
+        svg+=`<text x="${p.x+22}" y="${p.y+37}" text-anchor="start" fill="${bFill}" font-size="12" font-weight="${isBWin?'700':'500'}" font-family="PingFang SC,Microsoft YaHei,Arial">${b.n}</text>`;
+      }
+
+      // Divider
+      if(b){
+        svg+=`<line x1="${p.x+42}" y1="${p.y+MH/2}" x2="${p.x+MW}" y2="${p.y+MH/2}" stroke="${LC}" stroke-width="0.7" opacity="0.4"/>`;
       }
 
       // Progress indicator on right side
       if(isAWin&&!isChamp){
-        svg+=`<circle cx="${p.x+MW-6}" cy="${p.y+MH/2}" r="8" fill="none" stroke="${WC}" stroke-width="2"/>`;
-        svg+=`<polyline points="${p.x+MW-10},${p.y+MH/2} ${p.x+MW-7},${p.y+MH/2+3} ${p.x+MW-3},${p.y+MH/2-2}" stroke="${WC}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+        svg+=`<circle cx="${p.x+MW-5}" cy="${p.y+MH/2}" r="7" fill="none" stroke="${WC}" stroke-width="1.8"/>`;
+        svg+=`<polyline points="${p.x+MW-9},${p.y+MH/2} ${p.x+MW-6},${p.y+MH/2+3} ${p.x+MW-2},${p.y+MH/2-2}" stroke="${WC}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
       }
       if(isChamp){
-        svg+=`<text x="${p.x+MW/2}" y="${p.y-10}" text-anchor="middle" font-size="26" filter="url(#glowG)">👑</text>`;
-        svg+=`<text x="${p.x+MW/2}" y="${p.y+MH+20}" text-anchor="middle" font-size="11" fill="${GC}" font-family="PingFang SC,Microsoft YaHei,Arial">CHAMPION</text>`;
+        svg+=`<text x="${p.x+MW/2}" y="${p.y-8}" text-anchor="middle" font-size="22" filter="url(#glowG)">👑</text>`;
+        svg+=`<text x="${p.x+MW/2}" y="${p.y+MH+18}" text-anchor="middle" font-size="10" fill="${GC}" font-family="PingFang SC,Microsoft YaHei,Arial">CHAMPION</text>`;
       }
     }
   }
@@ -890,8 +892,8 @@ function buildSVGBracket(result){
   // Round labels
   for(let r=0;r<rounds.length;r++){
     const px=positions[r][0].x;
-    svg+=`<rect x="${px}" y="0" width="${MW}" height="20" rx="6" fill="${AC}" opacity="0.15"/>`;
-    svg+=`<text x="${px+MW/2}" y="14" text-anchor="middle" fill="${AC}" font-size="11" font-weight="700" font-family="PingFang SC,Microsoft YaHei,Arial">${rounds[r].name}</text>`;
+    svg+=`<rect x="${px}" y="0" width="${MW}" height="18" rx="5" fill="${AC}" opacity="0.1"/>`;
+    svg+=`<text x="${px+MW/2}" y="13" text-anchor="middle" fill="#9aa4b8" font-size="10" font-weight="700" font-family="PingFang SC,Microsoft YaHei,Arial">${rounds[r].name}</text>`;
   }
 
   svg+=`</svg>`;
